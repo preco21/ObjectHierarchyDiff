@@ -1,2 +1,2 @@
 # ObjectHierarchyDiff
- The Unity utility for diffing two GameObjects
+> Unity utility for diffing two GameObjects
