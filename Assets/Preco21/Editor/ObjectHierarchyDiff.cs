@@ -8,6 +8,7 @@ using Preco21;
 public class ObjectHierarchyDiff : EditorWindow
 {
     private static string LOG_TAG = "[ObjectHierarchyDiff]:";
+
     private enum ExtractDiffType
     {
         BASE,
@@ -17,8 +18,8 @@ public class ObjectHierarchyDiff : EditorWindow
     private GameObject baseObject = null;
     private GameObject targetObject = null;
     private ExtractDiffType extractDiffType = ExtractDiffType.BASE;
-    private string additionPrefix = "__added";
-    private string deletionPrefix = "__deleted";
+    private string additionSuffix = "__added";
+    private string deletionSuffix = "__deleted";
 
     [MenuItem("ObjectHierarchyDiff/ObjectHierarchyDiff")]
     public static void ShowWindow()
@@ -46,10 +47,10 @@ public class ObjectHierarchyDiff : EditorWindow
         switch (extractDiffType)
         {
             case ExtractDiffType.BASE:
-                deletionPrefix = EditorGUILayout.TextField("Deletion Prefix", deletionPrefix);
+                deletionSuffix = EditorGUILayout.TextField("Deletion Suffix", deletionSuffix);
                 break;
             case ExtractDiffType.TARGET:
-                additionPrefix = EditorGUILayout.TextField("Addition Prefix", additionPrefix);
+                additionSuffix = EditorGUILayout.TextField("Addition Suffix", additionSuffix);
                 break;
             default:
                 throw new Exception("invariant: unexpected `ExtractDiffType`");
@@ -81,13 +82,13 @@ public class ObjectHierarchyDiff : EditorWindow
         {
             return (false, "`Target Object` must be specified.");
         }
-        if (extractDiffType == ExtractDiffType.BASE && deletionPrefix.Trim().Equals(""))
+        if (extractDiffType == ExtractDiffType.BASE && deletionSuffix.Trim().Equals(""))
         {
-            return (false, "`Deletion Prefix` must be specified.");
+            return (false, "`Deletion Suffix` must be specified.");
         }
-        if (extractDiffType == ExtractDiffType.TARGET && additionPrefix.Trim().Equals(""))
+        if (extractDiffType == ExtractDiffType.TARGET && additionSuffix.Trim().Equals(""))
         {
-            return (false, "`Addition Prefix` must be specified.");
+            return (false, "`Addition Suffix` must be specified.");
         }
         return (true, "");
     }
@@ -104,20 +105,20 @@ public class ObjectHierarchyDiff : EditorWindow
         }
         DiffHelper.Node<GameObject> extractTo;
         List<DiffHelper.Record<GameObject>> subsetDiff;
-        string prefix;
+        string suffix;
         switch (extractDiffType)
         {
             case ExtractDiffType.BASE:
                 Debug.Log($"{LOG_TAG} Extracting Diffs on Base Object...");
                 extractTo = leftNode;
                 subsetDiff = diff.Where((e) => e.Type == DiffHelper.Type.DELETE).ToList();
-                prefix = deletionPrefix;
+                suffix = deletionSuffix;
                 break;
             case ExtractDiffType.TARGET:
                 Debug.Log($"{LOG_TAG} Extracting Diffs on Target Object...");
                 extractTo = rightNode;
                 subsetDiff = diff.Where((e) => e.Type == DiffHelper.Type.INSERT).ToList();
-                prefix = additionPrefix;
+                suffix = additionSuffix;
                 break;
             default:
                 throw new Exception("invariant: unexpected `ExtractDiffType`");
@@ -133,7 +134,7 @@ public class ObjectHierarchyDiff : EditorWindow
                 var diffPath = d.Path.Skip(1);
                 if (Enumerable.SequenceEqual(pathWithoutRoot, diffPath))
                 {
-                    node.Value.name = $"{node.Value.name}{prefix}";
+                    node.Value.name = $"{node.Value.name}{suffix}";
                 }
             }
             foreach (var obj in node.Children)
