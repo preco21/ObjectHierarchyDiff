@@ -31,7 +31,7 @@ namespace Preco21
             public T Value;
         }
 
-        public static T? GetValueOrNull<T>(List<T> a, System.Predicate<T> predicate) where T : struct
+        public static T? GetValueOrNull<T>(List<T> a, Predicate<T> predicate) where T : struct
         {
             var index = a.FindIndex(predicate);
             return index < 0 ? (T?)null : a[index];
